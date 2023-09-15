@@ -18,7 +18,8 @@ export default defineComponent({
       columns: 10,
       mines: 10,
       gameOver: false,
-      sweepedCnt: 0
+      sweepedCnt: 0,
+      win: false
     };
   },
   mounted() {
@@ -56,10 +57,12 @@ export default defineComponent({
 
       if (cell.opened || cell.content === '☥') return;
       cell.opened = true;
+      this.sweepedCnt++;
 
       if (cell.mine) {
         cell.exploded = true;
         this.gameOver = true;
+        this.win = false
         this.board.forEach((rowCells) => {
           rowCells.forEach((cell) => {
             if (cell.mine && cell.content != '☥') cell.content = '✿';
@@ -113,6 +116,7 @@ export default defineComponent({
     },
   },
 });
+
 </script>
 
 <template>
@@ -124,7 +128,8 @@ export default defineComponent({
         {{ cell.content }}
       </div>
     </div>
-    <button class="reset" @click="resetBoard">重新开始</button>
+    <h2 v-if="gameOver" class="minesweeper">{{ !win ? "游戏结束！你踩中了地雷。" : "游戏胜利" }}</h2>
+    <button class="reset" @click="resetBoard" v-if="gameOver">重新开始</button>
   </div>
 </template>
 
