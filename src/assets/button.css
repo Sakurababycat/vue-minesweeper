@@ -1,0 +1,42 @@
+.minesweeper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .row {
+    display: flex;
+  }
+  
+  .cell {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14pt;
+  }
+  
+  .opened {
+    background-color: #eee;
+    cursor: default;
+  }
+  
+  .mine {
+    background-color: red;
+    color: white;
+  }
+  
+  .exploded {
+    background-color: darkred;
+  }
+  
+  .reset {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #ccc;
+    border: none;
+    cursor: pointer;
+  }

@@ -1,17 +1,3 @@
-<template>
-  <div class="minesweeper">
-    <div v-for="(row, rowIndex) in board" :key="rowIndex" class="row">
-      <div v-for="(cell, columnIndex) in row" :key="columnIndex" class="cell"
-        :class="{ opened: cell.opened, mine: cell.mine && cell.exploded}"
-        @click="openCell(rowIndex, columnIndex)"
-        @contextmenu.prevent="flagCell(rowIndex, columnIndex)">
-        {{ cell.content }}
-      </div>
-    </div>
-    <button class="reset" @click="resetBoard">Reset</button>
-  </div>
-</template>
-
 <script lang="ts">
 import { defineComponent } from 'vue';
 
@@ -21,7 +7,7 @@ interface Cell {
   exploded: boolean;
   content: string | number;
   row: number,
-  col:number,
+  col: number,
 }
 
 export default defineComponent({
@@ -32,6 +18,7 @@ export default defineComponent({
       columns: 10,
       mines: 10,
       gameOver: false,
+      sweepedCnt: 0
     };
   },
   mounted() {
@@ -46,7 +33,7 @@ export default defineComponent({
       for (let i = 0; i < this.rows; i++) {
         const row: Cell[] = [];
         for (let j = 0; j < this.columns; j++) {
-          row.push({ opened: false, mine: false, exploded: false, content: '', row: i, col: j});
+          row.push({ opened: false, mine: false, exploded: false, content: '', row: i, col: j });
         }
         this.board.push(row);
       }
@@ -67,28 +54,39 @@ export default defineComponent({
 
       const cell = this.board[row][column];
 
-      if (cell.opened || cell.content === 'F') return;
+      if (cell.opened || cell.content === '☥') return;
+      cell.opened = true;
 
       if (cell.mine) {
         cell.exploded = true;
         this.gameOver = true;
+        this.board.forEach((rowCells) => {
+          rowCells.forEach((cell) => {
+            if (cell.mine && cell.content != '☥') cell.content = '✿';
+            if (!cell.mine && cell.content === '☥') { cell.exploded = true; }
+          });
+        });
+
+        // this.$nextTick().then(() => {
+        //   alert('游戏结束！你踩中了地雷。');
+        //   this.resetBoard();
+        // });
         // 处理游戏结束逻辑
         return;
       }
-
-      cell.opened = true;
 
       if (cell.content === '') {
         // 计算相邻格子的雷数
         const neighbors = this.getNeighbors(row, column);
         const minesCount = neighbors.filter((neighbor) => neighbor.mine).length;
-        cell.content = minesCount;
 
         if (minesCount === 0) {
           // 递归打开相邻的空格子
           neighbors.forEach((neighbor) => {
             this.openCell(neighbor.row, neighbor.col);
           });
+        } else {
+          cell.content = minesCount;
         }
       }
     },
@@ -99,7 +97,7 @@ export default defineComponent({
 
       if (cell.opened) return;
 
-      cell.content = cell.content === 'F' ? '' : 'F';
+      cell.content = cell.content === '☥' ? '' : '☥';
     },
     getNeighbors(row: number, column: number) {
       const neighbors: Cell[] = [];
@@ -117,46 +115,21 @@ export default defineComponent({
 });
 </script>
 
+<template>
+  <div class="minesweeper">
+    <div v-for="(row, rowIndex) in board" :key="rowIndex" class="row">
+      <div v-for="(cell, columnIndex) in row" :key="columnIndex" class="cell"
+        :class="{ opened: cell.opened, mine: cell.exploded }" @click="openCell(rowIndex, columnIndex)"
+        @contextmenu.prevent="flagCell(rowIndex, columnIndex)">
+        {{ cell.content }}
+      </div>
+    </div>
+    <button class="reset" @click="resetBoard">重新开始</button>
+  </div>
+</template>
+
+
+
 <style scoped>
-.minesweeper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.row {
-  display: flex;
-}
-
-.cell {
-  width: 30px;
-  height: 30px;
-  border: 1px solid #ccc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.opened {
-  background-color: #eee;
-  cursor: default;
-}
-
-.mine {
-  background-color: red;
-  color: white;
-}
-
-.exploded {
-  background-color: darkred;
-}
-
-.reset {
-  margin-top: 20px;
-  padding: 10px 20px;
-  background-color: #ccc;
-  border: none;
-  cursor: pointer;
-}
+@import "@/assets/button.css"
 </style>
