@@ -1,47 +1,162 @@
-<script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+  <div class="minesweeper">
+    <div v-for="(row, rowIndex) in board" :key="rowIndex" class="row">
+      <div v-for="(cell, columnIndex) in row" :key="columnIndex" class="cell"
+        :class="{ opened: cell.opened, mine: cell.mine && cell.exploded}"
+        @click="openCell(rowIndex, columnIndex)"
+        @contextmenu.prevent="flagCell(rowIndex, columnIndex)">
+        {{ cell.content }}
+      </div>
     </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+    <button class="reset" @click="resetBoard">Reset</button>
+  </div>
 </template>
 
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+interface Cell {
+  opened: boolean;
+  mine: boolean;
+  exploded: boolean;
+  content: string | number;
+  row: number,
+  col:number,
+}
+
+export default defineComponent({
+  data() {
+    return {
+      board: [] as Cell[][],
+      rows: 10,
+      columns: 10,
+      mines: 10,
+      gameOver: false,
+    };
+  },
+  mounted() {
+    this.resetBoard();
+  },
+  methods: {
+    resetBoard() {
+      this.board = [];
+      this.gameOver = false;
+
+      // 初始化游戏板
+      for (let i = 0; i < this.rows; i++) {
+        const row: Cell[] = [];
+        for (let j = 0; j < this.columns; j++) {
+          row.push({ opened: false, mine: false, exploded: false, content: '', row: i, col: j});
+        }
+        this.board.push(row);
+      }
+
+      // 埋雷
+      let minesCount = 0;
+      while (minesCount < this.mines) {
+        const randomRow = Math.floor(Math.random() * this.rows);
+        const randomColumn = Math.floor(Math.random() * this.columns);
+        if (!this.board[randomRow][randomColumn].mine) {
+          this.board[randomRow][randomColumn].mine = true;
+          minesCount++;
+        }
+      }
+    },
+    openCell(row: number, column: number) {
+      if (this.gameOver) return;
+
+      const cell = this.board[row][column];
+
+      if (cell.opened || cell.content === 'F') return;
+
+      if (cell.mine) {
+        cell.exploded = true;
+        this.gameOver = true;
+        // 处理游戏结束逻辑
+        return;
+      }
+
+      cell.opened = true;
+
+      if (cell.content === '') {
+        // 计算相邻格子的雷数
+        const neighbors = this.getNeighbors(row, column);
+        const minesCount = neighbors.filter((neighbor) => neighbor.mine).length;
+        cell.content = minesCount;
+
+        if (minesCount === 0) {
+          // 递归打开相邻的空格子
+          neighbors.forEach((neighbor) => {
+            this.openCell(neighbor.row, neighbor.col);
+          });
+        }
+      }
+    },
+    flagCell(row: number, column: number) {
+      if (this.gameOver) return;
+
+      const cell = this.board[row][column];
+
+      if (cell.opened) return;
+
+      cell.content = cell.content === 'F' ? '' : 'F';
+    },
+    getNeighbors(row: number, column: number) {
+      const neighbors: Cell[] = [];
+
+      for (let i = Math.max(0, row - 1); i <= Math.min(row + 1, this.rows - 1); i++) {
+        for (let j = Math.max(0, column - 1); j <= Math.min(column + 1, this.columns - 1); j++) {
+          if (i === row && j === column) continue;
+          neighbors.push({ ...this.board[i][j] });
+        }
+      }
+
+      return neighbors;
+    },
+  },
+});
+</script>
+
 <style scoped>
-header {
-  line-height: 1.5;
+.minesweeper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+.row {
+  display: flex;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+.cell {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+.opened {
+  background-color: #eee;
+  cursor: default;
+}
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+.mine {
+  background-color: red;
+  color: white;
+}
+
+.exploded {
+  background-color: darkred;
+}
+
+.reset {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #ccc;
+  border: none;
+  cursor: pointer;
 }
 </style>
