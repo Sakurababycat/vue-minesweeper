@@ -1,5 +1,4 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
 
 interface Cell {
   opened: boolean;
@@ -10,23 +9,51 @@ interface Cell {
   col: number,
 }
 
-export default defineComponent({
+export default {
   data() {
     return {
       board: [] as Cell[][],
-      rows: 10,
-      columns: 10,
+      rows: 9,
+      columns: 9,
       mines: 10,
       gameOver: false,
       sweepedCnt: 0,
-      win: false
+      win: false,
+      custom: false,
     };
+  },
+  computed: {
+    rowsC: {
+      get(): number {
+        return this.rows;
+      },
+      set(newValue: number) {
+        this.rows = newValue < 5 || newValue > 40 ? 5 : newValue;
+      }
+    },
+    columnsC: {
+      get(): number {
+        return this.columns;
+      },
+      set(newValue: number) {
+        this.columns = newValue < 5 || newValue > 40 ? 5 : newValue;
+      }
+    },
+    minesC: {
+      get(): number {
+        return this.mines;
+      },
+      set(newValue: number) {
+        this.mines = newValue > this.rowsC * this.columnsC - 9 || newValue < 0 ? 0 : newValue;
+      }
+    }
   },
   mounted() {
     this.resetBoard();
   },
   methods: {
     resetBoard() {
+      if (this.rows < 5 || this.rows > 40 || this.columns < 5 || this.columns > 40 || this.mines > this.columns * this.rows - 9) return;
       this.board = [];
       this.gameOver = false;
 
@@ -114,12 +141,48 @@ export default defineComponent({
 
       return neighbors;
     },
+    onEasy() {
+      this.rows = 9;
+      this.columns = 9;
+      this.mines = 10;
+      this.custom = false;
+    },
+    onMedium() {
+      this.rows = 16;
+      this.columns = 16;
+      this.mines = 40;
+      this.custom = false;
+    },
+    onHard() {
+      this.rows = 16;
+      this.columns = 30;
+      this.mines = 99;
+      this.custom = false;
+    },
+    onCustom() {
+      this.custom = true;
+    }
   },
-});
+}
 
 </script>
 
 <template>
+  <h1 class="header">Tomoyo-Minessweeper</h1>
+  <div class="input-container" @submit.prevent="resetBoard" @input="resetBoard">
+    <input type="radio" id="low" name="level" value="low" @input="onEasy" checked>
+    <label for="low">低级</label>
+    <input type="radio" id="medium" name="level" value="medium" @input="onMedium">
+    <label for="medium">中级</label>
+    <input type="radio" id="high" name="level" value="high" @input="onHard">
+    <label for="high" class="space">高级</label>
+
+    <input type="radio" id="custom" name="level" value="custom" @input="onCustom">
+    <label for="custom">自定义</label>
+    <label for="length">长:</label><input type="number" min="5" max="99" v-model="rowsC" :disabled="!custom">
+    <label for="length">宽:</label><input type="number" min="5" max="99" v-model="columnsC" :disabled="!custom">
+    <label for="length">雷数:</label><input type="number" min="5" max="99" v-model="minesC" :disabled="!custom">
+  </div>
   <div class="minesweeper">
     <div v-for="(row, rowIndex) in board" :key="rowIndex" class="row">
       <div v-for="(cell, columnIndex) in row" :key="columnIndex" class="cell"
