@@ -168,7 +168,7 @@ export default {
 </script>
 
 <template>
-  <h1 class="header">Tomoyo-Minessweeper</h1>
+  <h1 class="header">Tomoyo-MineSweeper</h1>
   <div class="input-container" @submit.prevent="resetBoard" @input="resetBoard">
     <input type="radio" id="low" name="level" value="low" @input="onEasy" checked>
     <label for="low">低级</label>
