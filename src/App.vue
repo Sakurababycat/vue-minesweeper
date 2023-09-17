@@ -99,7 +99,7 @@ export default {
         }
       }
     },
-    openCell(row: number, column: number) {
+    openCell(row: number, column: number, from_click: boolean = true) {
       if (this.gameOver) return;
       if (this.fisrtClick) {
         this.fisrtClick = false;
@@ -116,7 +116,12 @@ export default {
 
       const cell = this.board[row][column];
 
-      if (cell.opened || cell.content === '☥') return;
+      if (cell.opened || cell.content === '☥') {
+        if (from_click) {
+          this.flagCell(row, column);
+        }
+        return;
+      }
       cell.opened = true;
 
       if (cell.mine) {
@@ -147,7 +152,7 @@ export default {
         if (minesCount === 0) {
           // 递归打开相邻的空格子
           neighbors.forEach((neighbor) => {
-            this.openCell(neighbor.row, neighbor.col);
+            this.openCell(neighbor.row, neighbor.col, false);
           });
         } else {
           cell.content = minesCount;
@@ -155,7 +160,7 @@ export default {
       }
     },
     flagCell(row: number, column: number) {
-      if (this.gameOver) return;
+      if (this.gameOver || this.fisrtClick) return;
 
       const cell = this.board[row][column];
 
@@ -165,15 +170,21 @@ export default {
       }
       else {
         const neighbors = this.getNeighbors(row, column);
-        const minesCount = neighbors.filter((neighbor) => neighbor.mine).length;
-        const flagCount = neighbors.filter((neighbor) => neighbor.content === '☥').length;
+        const neighborMines = neighbors.filter((neighbor) => neighbor.mine);
+        const neighborFlags = neighbors.filter((neighbor) => neighbor.content === '☥');
+        const neighborCanOpen = neighbors.filter((neighbor) => !neighbor.opened);
 
-        if (minesCount === flagCount) {
+        if (neighborFlags.length === neighborMines.length) {
           // 递归打开相邻的空格子
           neighbors.forEach((neighbor) => {
-            this.openCell(neighbor.row, neighbor.col);
+            this.openCell(neighbor.row, neighbor.col, false);
           });
-        } else {
+        } else if (neighborCanOpen.length === neighborMines.length) {
+          neighborCanOpen.filter((neighbor) => neighbor.content === '').forEach((neighbor) => {
+            this.flagCell(neighbor.row, neighbor.col);
+          });
+        }
+        else {
           neighbors.filter((neighbor) => !neighbor.opened).forEach((ncell) => {
             let blinkCount = 0;
             const blinkInterval = setInterval(() => {
