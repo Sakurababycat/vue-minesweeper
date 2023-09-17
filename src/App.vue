@@ -116,7 +116,8 @@ export default {
 
       const cell = this.board[row][column];
 
-      if (cell.opened || cell.content === '☥') {
+      if (cell.content === '☥') return;
+      if (cell.opened) {
         if (from_click) {
           this.flagCell(row, column);
         }
