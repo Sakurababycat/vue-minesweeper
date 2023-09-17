@@ -1,12 +1,13 @@
-<script lang="ts">
+<script lang="ts" >
 
 interface Cell {
   opened: boolean;
   mine: boolean;
   exploded: boolean;
   content: string | number;
-  row: number,
-  col: number,
+  row: number;
+  col: number;
+  shin: boolean;
 }
 
 export default {
@@ -20,7 +21,19 @@ export default {
       sweepedCnt: 0,
       win: false,
       custom: false,
+      fisrtClick: true,
+      time: 0,
+      timer: 0,
+      minecnt: 0,
     };
+  },
+  watch: {
+    sweepedCnt(newV: number) {
+      if (this.rows * this.columns - this.mines === newV) {
+        this.gameOver = true;
+        this.win = true;
+      }
+    },
   },
   computed: {
     rowsC: {
@@ -28,7 +41,8 @@ export default {
         return this.rows;
       },
       set(newValue: number) {
-        this.rows = newValue < 5 || newValue > 40 ? 5 : newValue;
+        this.rows = newValue < 1 ? 1 : newValue > 40 ? 40 : newValue;
+        this.minesC = this.mines
       }
     },
     columnsC: {
@@ -36,7 +50,8 @@ export default {
         return this.columns;
       },
       set(newValue: number) {
-        this.columns = newValue < 5 || newValue > 40 ? 5 : newValue;
+        this.columns = newValue < 1 ? 1 : newValue > 40 ? 40 : newValue;
+        this.minesC = this.mines
       }
     },
     minesC: {
@@ -61,17 +76,24 @@ export default {
       for (let i = 0; i < this.rows; i++) {
         const row: Cell[] = [];
         for (let j = 0; j < this.columns; j++) {
-          row.push({ opened: false, mine: false, exploded: false, content: '', row: i, col: j });
+          row.push({ opened: false, mine: false, exploded: false, content: '', row: i, col: j, shin: false });
         }
         this.board.push(row);
       }
+      this.fisrtClick = true;
+      this.sweepedCnt = 0;
+      this.minecnt = this.mines;
+      this.time = 0;
+      clearInterval(this.timer);
+    },
+    setMines(crow: number, ccol: number) {
 
       // 埋雷
       let minesCount = 0;
       while (minesCount < this.mines) {
         const randomRow = Math.floor(Math.random() * this.rows);
         const randomColumn = Math.floor(Math.random() * this.columns);
-        if (!this.board[randomRow][randomColumn].mine) {
+        if (!this.board[randomRow][randomColumn].mine && !(Math.abs(randomRow - crow) <= 1 && Math.abs(randomColumn - ccol) <= 1)) {
           this.board[randomRow][randomColumn].mine = true;
           minesCount++;
         }
@@ -79,6 +101,18 @@ export default {
     },
     openCell(row: number, column: number) {
       if (this.gameOver) return;
+      if (this.fisrtClick) {
+        this.fisrtClick = false;
+        this.setMines(row, column);
+        this.timer = setInterval(() => {
+          if (this.gameOver) {
+            clearInterval(this.timer);
+          }
+          else {
+            this.time++;
+          }
+        }, 1000);
+      }
 
       const cell = this.board[row][column];
 
@@ -125,9 +159,33 @@ export default {
 
       const cell = this.board[row][column];
 
-      if (cell.opened) return;
+      if (!cell.opened) {
+        cell.content === '☥' ? this.minecnt++ : this.minecnt--;
+        cell.content = cell.content === '☥' ? '' : '☥';
+      }
+      else {
+        const neighbors = this.getNeighbors(row, column);
+        const minesCount = neighbors.filter((neighbor) => neighbor.mine).length;
+        const flagCount = neighbors.filter((neighbor) => neighbor.content === '☥').length;
 
-      cell.content = cell.content === '☥' ? '' : '☥';
+        if (minesCount === flagCount) {
+          // 递归打开相邻的空格子
+          neighbors.forEach((neighbor) => {
+            this.openCell(neighbor.row, neighbor.col);
+          });
+        } else {
+          neighbors.filter((neighbor) => !neighbor.opened).forEach((ncell) => {
+            let blinkCount = 0;
+            const blinkInterval = setInterval(() => {
+              ncell.shin = !ncell.shin;
+              blinkCount++;
+              if (blinkCount === 6) { // 闪烁3次，6个状态切换
+                clearInterval(blinkInterval);
+              }
+            }, 100);
+          })
+        }
+      }
     },
     getNeighbors(row: number, column: number) {
       const neighbors: Cell[] = [];
@@ -135,7 +193,7 @@ export default {
       for (let i = Math.max(0, row - 1); i <= Math.min(row + 1, this.rows - 1); i++) {
         for (let j = Math.max(0, column - 1); j <= Math.min(column + 1, this.columns - 1); j++) {
           if (i === row && j === column) continue;
-          neighbors.push({ ...this.board[i][j] });
+          neighbors.push(this.board[i][j]);
         }
       }
 
@@ -183,11 +241,19 @@ export default {
     <label for="length">宽:</label><input type="number" min="5" max="99" v-model="columnsC" :disabled="!custom">
     <label for="length">雷数:</label><input type="number" min="5" max="99" v-model="minesC" :disabled="!custom">
   </div>
+  <div class="show-box">
+    <div class="showl">
+      <p>{{ time }}</p>
+    </div>
+    <div class="showr">
+      <p>{{ minecnt }}</p>
+    </div>
+  </div>
   <div class="minesweeper">
     <div v-for="(row, rowIndex) in board" :key="rowIndex" class="row">
-      <div v-for="(cell, columnIndex) in row" :key="columnIndex" class="cell"
-        :class="{ opened: cell.opened, mine: cell.exploded }" @click="openCell(rowIndex, columnIndex)"
-        @contextmenu.prevent="flagCell(rowIndex, columnIndex)">
+      <div v-for="(cell, columnIndex) in row" :key="columnIndex" class="cell" :class="{
+        opened: cell.opened || cell.shin, mine: cell.exploded, ['number-' + cell.content]: typeof cell.content === 'number'
+      }" @click="openCell(rowIndex, columnIndex)" @contextmenu.prevent="flagCell(rowIndex, columnIndex)">
         {{ cell.content }}
       </div>
     </div>

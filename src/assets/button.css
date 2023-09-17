@@ -11,16 +11,18 @@
   .cell {
     width: 25px;
     height: 25px;
-    border: 1px solid #ccc;
+    border: 1px solid #555;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     font-size: 14pt;
+    background-color: #ddd;
+    font-weight: bold;
   }
   
   .opened {
-    background-color: #eee;
+    background-color: #fff;
     cursor: default;
   }
   
@@ -34,11 +36,16 @@
   }
   
   .reset {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: #ccc;
-    border: none;
+    margin-top: 0px;
+    padding: 5px 5px;
+    background-color: paleturquoise;
+    border: pink solid;
+    border-radius: 20%;
+    border-width: 2px;
     cursor: pointer;
+    font-size: 12pt;
+    font-weight: bold;
+    color: black;
   }
   .input-container {
     display: flex;
@@ -47,6 +54,7 @@
     margin-top: 20px;
     margin-bottom: 20px;
     font-size: 12pt;
+    font-weight: bold;
   }
   
   .input-container label {
@@ -59,6 +67,8 @@
     padding: 2px;
     text-align: center;
     font-size: 12pt;
+    font-weight: bold;
+    background-color: #efe;
   }
 
   .input-container .space {
@@ -71,4 +81,59 @@
     margin: 0;
     padding: 0;
     color: #333;
+  }
+
+  .show-box {
+    display: flex;
+    justify-content: center;
+    text-align: right;
+    align-items: center;
+    margin: 20px;
+  }
+  
+  .showr {
+    border: 2px solid #000;
+    width: 100px;
+    margin-left: 100px;
+  }
+  .showl {
+    border: 2px solid #000;
+    width: 100px;
+  }
+  
+  .show-box p {
+    margin: 0px;
+    font: 24pt bold;
+  }
+
+  .number-1 {
+    color: blue;
+  }
+  
+  .number-2 {
+    color: green;
+  }
+  
+  .number-3 {
+    color: red;
+  }
+  
+  .number-4 {
+    color: darkblue;
+  }
+  
+  .number-5 {
+    color: darkred;
+  }
+  
+  .number-6 {
+    color: cyan;
+  }
+  
+  .number-7 {
+    color: violet;
+  }
+  
+  .number-8 {
+    color: black;
   }
