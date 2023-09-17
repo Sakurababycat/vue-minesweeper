@@ -118,7 +118,6 @@ export default {
 
       if (cell.opened || cell.content === '☥') return;
       cell.opened = true;
-      this.sweepedCnt++;
 
       if (cell.mine) {
         cell.exploded = true;
@@ -138,6 +137,7 @@ export default {
         // 处理游戏结束逻辑
         return;
       }
+      this.sweepedCnt++;
 
       if (cell.content === '') {
         // 计算相邻格子的雷数
@@ -258,7 +258,7 @@ export default {
       </div>
     </div>
     <h2 v-if="gameOver" class="minesweeper">{{ !win ? "游戏结束！你踩中了地雷。" : "游戏胜利" }}</h2>
-    <button class="reset" @click="resetBoard" v-if="gameOver">重新开始</button>
+    <button class="reset" @click="resetBoard">重新开始</button>
   </div>
 </template>
 
