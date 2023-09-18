@@ -272,6 +272,12 @@ export default {
     <h2 v-if="gameOver" class="minesweeper">{{ !win ? "游戏结束！你踩中了地雷。" : "游戏胜利" }}</h2>
     <button class="reset" @click="resetBoard">重新开始</button>
   </div>
+  <h4 style="color: red;">Tips:</h4>
+  <h5 style="color: darkcyan">左键开启方格，右键（取消）标记方格。</h5>
+  <h5 style="color: lightseagreen">第一次点击一定不是雷，并且周围8个格子一定不是雷。</h5>
+  <h5 style="color: blue">点击任意数字标记：</h5>
+  <h5 style="color: purple">如果周围未开格子与数字相同则标记所有格子。</h5>
+  <h5 style="color: blueviolet">如果周围标记数量与数字相同则开启所有未标记格子。</h5>
 </template>
 
 
