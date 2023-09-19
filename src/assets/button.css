@@ -39,13 +39,25 @@
     margin-top: 10px;
     padding: 5px 5px;
     background-color: paleturquoise;
-    border: pink solid;
+    border: lightgoldenrodyellow solid;
     border-radius: 20%;
     border-width: 2px;
     cursor: pointer;
     font-size: 12pt;
     font-weight: bold;
-    color: black;
+    color: darksalmon;
+  }
+  .help {
+    margin-top: 10px;
+    padding: 5px 5px;
+    background-color: lightgoldenrodyellow;
+    border: lightcoral solid;
+    border-radius: 20%;
+    border-width: 2px;
+    cursor: pointer;
+    font-size: 12pt;
+    font-weight: bold;
+    color: red;
   }
   .input-container {
     display: flex;
