@@ -194,10 +194,10 @@ export default {
         const neighborFlags = neighbors.filter((neighbor) => neighbor.content === '☥');
         const neighborCanOpen = neighbors.filter((neighbor) => !neighbor.opened);
 
-        if (neighborFlags.length === neighborMines.length || neighborFlags.length === neighborMines.length - Number(this.help && this.helpUsed)) {
+        if (neighborFlags.length === neighborMines.length || neighborFlags.length === (neighborMines.length - Number(this.help && this.helpUsed))) {
           // 递归打开相邻的空格子
-          neighborCanOpen.filter((neighbor) => neighbor.content === '' && neighbor.mine).forEach((neighbor) => this.flagCell(neighbor.row, neighbor.col));
-          neighbors.forEach((neighbor) => {
+          neighborCanOpen.filter((neighbor) => neighbor.content === '' && neighbor.mine).forEach((neighbor) => this.openCell(neighbor.row, neighbor.col));
+          neighbors.filter((neighbor) => neighbor.content === '' && !neighbor.mine).forEach((neighbor) => {
             this.openCell(neighbor.row, neighbor.col, false);
           });
         } else if (neighborCanOpen.length === neighborMines.length) {
